@@ -1,10 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 
-// Ruta relativa al archivo JSON que almacena los datos de los usuarios
-const dataFilePath = path.resolve('usuarios.json');
+// Relative path to the JSON file storing user data
+const dataFilePath = path.resolve('users.json');
 
-// Función para cargar los datos de usuarios desde el archivo JSON
+// Function to load user data from the JSON file
 const loadUsersData = () => {
   if (fs.existsSync(dataFilePath)) {
     const data = fs.readFileSync(dataFilePath, 'utf-8');
@@ -15,34 +15,34 @@ const loadUsersData = () => {
   return {};
 };
 
-// Función para guardar los datos de usuarios en el archivo JSON
+// Function to save user data to the JSON file
 const saveUsersData = (users) => {
   fs.writeFileSync(dataFilePath, JSON.stringify(users, null, 2));
 };
 
 let handler = async (m, { conn, text }) => {
-  if (!text) throw "⚠️ Ingresa un formato válido para borrar la cuenta. Ejemplo: .deleteacc número-de-teléfonos - contraseña";
+  if (!text) throw "⚠️ Enter a valid format to delete the account. Example: .deleteacc phone-numbers - password";
 
-  // Extraer los números de teléfono y la contraseña del texto proporcionado
+  // Extract phone numbers and password from the provided text
   const [phoneNumbersText, password] = text.split('-').map(part => part.trim());
 
   if (!phoneNumbersText || !password) {
-    throw "⚠️ Formato inválido. Debes proporcionar los números de teléfono separados por comas y la contraseña separados por un guión. Ejemplo: .deleteacc número-de-teléfonos - contraseña";
+    throw "⚠️ Invalid format. You must provide phone numbers separated by commas and the password separated by a dash. Example: .deleteacc phone-numbers - password";
   }
 
-  // Obtener el número de teléfono del remitente
+  // Get the sender's phone number
   const senderPhoneNumber = m.sender.split('@')[0];
 
-  // Verificar si el número de teléfono del remitente está incluido en la lista proporcionada
+  // Verify if the sender's phone number is included in the provided list
   const phoneNumbers = phoneNumbersText.split(',').map(phoneNumber => phoneNumber.trim());
   if (!phoneNumbers.includes(senderPhoneNumber)) {
-    throw "❌ No tienes permiso para eliminar esta cuenta. Debes proporcionar tu propio número de teléfono.";
+    throw "❌ You don't have permission to delete this account. You must provide your own phone number.";
   }
 
-  // Cargar los datos de usuarios
+  // Load user data
   const users = loadUsersData();
 
-  // Verificar si los números de teléfono y la contraseña coinciden para eliminar las cuentas
+  // Verify if phone numbers and password match to delete the accounts
   const usersToDelete = Object.values(users).filter(user => {
     return user.phoneNumbers.some(phoneNumber => phoneNumbers.includes(phoneNumber)) && user.password === password;
   });
@@ -50,13 +50,13 @@ let handler = async (m, { conn, text }) => {
   if (usersToDelete.length > 0) {
     usersToDelete.forEach(user => delete users[user.nick]);
 
-    // Guardar los datos actualizados en el archivo JSON
+    // Save the updated data to the JSON file
     saveUsersData(users);
 
     const deletedAccounts = usersToDelete.map(user => user.phoneNumbers.join(', ')).join(', ');
-    m.reply(`✅ Las cuentas asociadas a los números de teléfono ${deletedAccounts} han sido eliminadas.`);
+    m.reply(`✅ Accounts associated with phone numbers ${deletedAccounts} have been deleted.`);
   } else {
-    throw "❌ No se encontraron cuentas válidas con los números de teléfono y contraseña proporcionados.";
+    throw "❌ No valid accounts found with the provided phone numbers and password.";
   }
 };
 
