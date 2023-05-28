@@ -41,5 +41,5 @@ let handler = async (m, { conn, usedPrefix }) => {
   }
 };
 
-handler.command = /^(cuenta|account|perfil)$/i;
+handler.command = /^(cuenta|account|perfil|profile)$/i;
 export default handler;
