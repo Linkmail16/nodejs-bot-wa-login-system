@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-// Ruta relativa al archivo JSON que almacena los datos de los usuarios
+// Relative path to the JSON file that stores the user data
 const dataFilePath = path.resolve('usuarios.json');
 
 const loadUsersData = () => {
@@ -16,28 +16,28 @@ const loadUsersData = () => {
 };
 
 let handler = async (m, { conn, usedPrefix }) => {
-  // Cargar los datos de usuarios desde el archivo JSON
+  // Load the user data from the JSON file
   const users = loadUsersData();
 
-  // Obtener el número de teléfono del remitente
+  // Get the sender's phone number
   const phoneNumber = m.sender.split('@')[0];
 
-  // Buscar al usuario registrado por el número de teléfono
+  // Search for the registered user by phone number
   const user = Object.values(users).find(user => user.phoneNumbers.includes(phoneNumber));
 
   if (user) {
     const { nick, phoneNumbers, lastLoginTimestamp, lastLogoutTimestamp, vip, vipExpirationTimestamp } = user;
     const formattedPhoneNumbers = phoneNumbers.map(number => `+${number}`).join(', ');
-    const message = `✅ Nick: ${nick}\n📞 Números: ${formattedPhoneNumbers}\n💡 Estado: Registrado\n\nℹ️ Último inicio de sesión: ${new Date(lastLoginTimestamp).toLocaleString()}\nℹ️ Último cierre de sesión: ${new Date(lastLogoutTimestamp).toLocaleString()}\n\n⭐ VIP: ${vip ? 'Sí' : 'No'}\n${vip && vipExpirationTimestamp ? `⏰ Expiración VIP: ${new Date(vipExpirationTimestamp).toLocaleString()}` : ''}`;
+    const message = `✅ Nick: ${nick}\n📞 Phone numbers: ${formattedPhoneNumbers}\n💡 Status: Registered\n\nℹ️ Last login: ${new Date(lastLoginTimestamp).toLocaleString()}\nℹ️ Last logout: ${new Date(lastLogoutTimestamp).toLocaleString()}\n\n⭐ VIP: ${vip ? 'Yes' : 'No'}\n${vip && vipExpirationTimestamp ? `⏰ VIP expiration: ${new Date(vipExpirationTimestamp).toLocaleString()}` : ''}` : ''}`;
 
-    // Enviar mensaje con botones para cambiar contraseña y borrar cuenta
+    // Send message with buttons to change password and delete account
     conn.sendButton(m.chat, message, '¿Qué acción deseas realizar?', [
       ['Cambiar Contraseña', '.changepass'],
       ['Borrar Cuenta', '.deleteacc']
     ]);
 
   } else {
-    m.reply(`❌ No estás registrado.`);
+    m.reply(`❌ You are not registered.`);
   }
 };
 
